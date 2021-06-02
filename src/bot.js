@@ -1,5 +1,5 @@
 // Dependencies
-const Client = require('./base/Egglord.js');
+const Client = require('./base/Task-Manager.js');
 require('./structures');
 const bot = new Client({
 	partials: ['GUILD_MEMBER', 'USER', 'MESSAGE', 'CHANNEL', 'REACTION'],
@@ -29,7 +29,6 @@ const path = require('path');
 			console.log(err.message);
 		}
 	});
-
 	// load events
 	const evtFolder = await readdir('./src/events/');
 	bot.logger.log(`=-=-=-=-=-=-=- Loading events(s): ${evtFolder.length} -=-=-=-=-=-=-=`);

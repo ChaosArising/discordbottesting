@@ -14,11 +14,6 @@ module.exports = async (bot) => {
 		nodes: [
 			{ host: 'localhost', port: 5000, password: 'youshallnotpass' },
 		],
-		plugins: [
-			new Spotify({ clientID, clientSecret }),
-			new Deezer({ playlistLimit: 1, albumLimit:1 }),
-			new Facebook(),
-		],
 		autoPlay: true,
 		send(id, payload) {
 			const guild = bot.guilds.cache.get(id);

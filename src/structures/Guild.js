@@ -1,6 +1,7 @@
 // Dependencies
 const { Structures } = require('discord.js'),
 	{ GuildSchema } = require('../database/models'),
+	{Collection } = require('discord.js'),
 	{ logger } = require('../utils');
 
 module.exports = Structures.extend('Guild', Guild => {
@@ -9,9 +10,12 @@ module.exports = Structures.extend('Guild', Guild => {
 			super(bot, data);
 			// This for caching server settings
 			this.settings = {};
-
+			
 			// premium guild or not
 			this.premium = false;
+
+			//slash commands
+			this.interactions = new Collection();
 		}
 
 		// Fetch guild settings (only on ready event)

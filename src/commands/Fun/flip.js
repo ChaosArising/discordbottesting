@@ -10,6 +10,7 @@ module.exports = class Flip extends Command {
 			description: 'Flip a coin.',
 			usage: 'flip',
 			cooldown: 1000,
+			slash: true
 		});
 	}
 
@@ -18,4 +19,9 @@ module.exports = class Flip extends Command {
 		const r = Math.round(Math.random());
 		message.channel.send(`${message.checkEmoji() ? bot.customEmojis[['head', 'tail'][r]] : ''} ${message.translate(`fun/flip:${r < 0.5 ? 'HEADS' : 'TAILS'}`)}`);
 	}
+	async callback(bot, interaction) {
+		const r = Math.round(Math.random());
+		return await bot.send(interaction, `${bot.customEmojis[['head', 'tail'][r]]} ${bot.translate(`fun/flip:${r < 0.5 ? 'HEADS' : 'TAILS'}`)}`);
+	}
 };
+ 
