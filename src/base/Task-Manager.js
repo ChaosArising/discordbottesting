@@ -1,3 +1,6 @@
+const { timeStamp } = require('console');
+const { ConsoleMessage } = require('puppeteer');
+
 // Dependecies
 const { Client, Collection, APIMessage } = require('discord.js'),
 	{ GuildSchema } = require('../database/models'),
@@ -9,8 +12,8 @@ const { Client, Collection, APIMessage } = require('discord.js'),
 	{ promisify } = require('util'),
 	readdir = promisify(require('fs').readdir);
 
-// Creates Egglord class
-module.exports = class Egglord extends Client {
+// Creates Manager class
+module.exports = class Manager extends Client {
 	constructor(options) {
 		super(options);
 		// for console logging
@@ -104,7 +107,7 @@ module.exports = class Egglord extends Client {
 		this.PresenceType = type;
 		try {
 			let j = 0;
-			setInterval(() => this.user.setActivity(`${this.Activity[j++ % this.Activity.length]}`, { type: type, url: 'https://www.twitch.tv/yassuo' }), 10000);
+			setInterval(() => this.user.setActivity(`${this.Activity[j++ % this.Activity.length]}`, { type: type, url: 'https://www.twitch.tv/' }), 10000);
 			return;
 		} catch (e) {
 			console.log(e);
@@ -127,7 +130,7 @@ module.exports = class Egglord extends Client {
 		}
 	}
 
-	// Load a slash-command
+	// Load a slash command
 	loadInteraction(commandPath, commandName, guild) {
 		try {
 			const cmd = new (require(`.${commandPath}${path.sep}${commandName}`))(this);
@@ -148,25 +151,26 @@ module.exports = class Egglord extends Client {
 		}
 	}
 
+	// Deletes the slash command
 	deleteInteraction(commandPath, commandName, guild) {
 		try {
 			const cmd = new (require(`.${commandPath}${path.sep}${commandName}`))(this);
 			if(cmd.conf.slash == true) {
-				fetch("https://discord.com/api/v8/applications/" + bot.user.id + "/commands/" + cmd.id, {
-					method: "DELETE",
-					headers: {
-						Authorization: `Bot ${bot.token}`,
-						"Content-Type": "application/json",
-					}
+				this.api.applications(this.user.id).guilds(guild.id).commands.get().then(commandList => {
+					const interactionID = commandList.find(command => command.name === cmd.help.name).id
+					this.api.applications(this.user.id).guilds(guild.id).commands(interactionID).delete().then(result => {
+						guild.interactions.delete(cmd.help.name, cmd)
+					})
 				})
-				guild.interaction.delete(cmd.help.name, cmd)
 			}
 			return false;
 		} catch (err) {
+			console.log(err)
 			return `Unable to delete interaction ${commandName}: ${err}`;
 		}
 	}
 
+	// Loads a slash command category
 	async loadInteractionGroup(category, guild) {
 		try {
 			const commands = (await readdir('./src/commands/' + category + "/")).filter((v, i, a) => a.indexOf(v) === i);
@@ -183,12 +187,14 @@ module.exports = class Egglord extends Client {
 		}
 	}
 
+	// Deletes a slash command category
 	async deleteInteractionGroup(category, guild) {
 		try {
 			const commands = (await readdir('./src/commands/' + category + "/")).filter((v, i, a) => a.indexOf(v) === i);
 
 			commands.forEach((cmd) => {
-				if(guild.get(cmd.help.name)) {
+				console.log(cmd)
+				if(guild.interactions.get(cmd.replace('.js', ''))) {
 					const resp = this.deleteInteraction('./commands/' + category, cmd, guild);
 					if (resp) this.logger.error(resp);
 				}
